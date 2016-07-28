@@ -1,0 +1,85 @@
+// Copyright IBM Corp. 2015,2016. All Rights Reserved.
+// Node module: loopback-context-cls
+// This file is licensed under the MIT License.
+// License text available at https://opensource.org/licenses/MIT
+
+'use strict';
+
+var cls = require('continuation-local-storage');
+var domain = require('domain');
+
+var ClsContext = module.exports;
+
+/**
+ * Get the current context object. The context is preserved
+ * across async calls, it behaves like a thread-local storage.
+ *
+ * @returns {Namespace} The context object or null.
+ */
+ClsContext.getCurrentContext = function() {
+  // A placeholder method, see CurrentContext.createContext() for the real version
+  return null;
+};
+
+/**
+ * Run the given function in such way that
+ * `CurrentContext.getCurrentContext` returns the
+ * provided context object.
+ *
+ * **NOTE**
+ *
+ * The method is supported on the server only, it does not work
+ * in the browser at the moment.
+ *
+ * @param {Function} fn The function to run, it will receive arguments
+ * (currentContext, currentDomain).
+ * @param {Namespace} context An optional context object.
+ *   When no value is provided, then the default global context is used.
+ */
+ClsContext.runInContext = function(fn, context) {
+  var currentDomain = domain.create();
+  currentDomain.oldBind = currentDomain.bind;
+  currentDomain.bind = function(callback, context) {
+    return currentDomain.oldBind(ns.bind(callback, context), context);
+  };
+
+  var ns = context || ClsContext.createContext('loopback');
+
+  currentDomain.run(function() {
+    ns.run(function executeInContext(context) {
+      fn(ns, currentDomain);
+    });
+  });
+};
+
+/**
+ * Create a new LoopBackContext instance that can be used
+ * for `CurrentContext.runInContext`.
+ *
+ * **NOTES**
+ *
+ * At the moment, `CurrentContext.getCurrentContext` supports
+ * a single global context instance only. If you call `createContext()`
+ * multiple times, `getCurrentContext` will return the last context
+ * created.
+ *
+ * The method is supported on the server only, it does not work
+ * in the browser at the moment.
+ *
+ * @param {String} scopeName An optional scope name.
+ * @return {Namespace} The new context object.
+ */
+ClsContext.createContext = function(scopeName) {
+  // Make the namespace globally visible via the process.context property
+  process.context = process.context || {};
+  var ns = process.context[scopeName];
+  if (!ns) {
+    ns = cls.createNamespace(scopeName);
+    process.context[scopeName] = ns;
+    // Set up CurrentContext.getCurrentContext()
+    ClsContext.getCurrentContext = function() {
+      return ns && ns.active ? ns : null;
+    };
+  }
+  return ns;
+};
