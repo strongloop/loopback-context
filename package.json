@@ -1,0 +1,29 @@
+{
+  "name": "loopback-context-cls",
+  "version": "1.0.0-1",
+  "description": "Current context for LoopBack applications, based on node-continuation-local-storage",
+  "keywords": [
+    "StrongLoop",
+    "LoopBack",
+    "Context"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/strongloop/loopback-context-cls"
+  },
+  "main": "index.js",
+  "browser": "browser.js",
+  "scripts": {
+    "test": "mocha",
+    "posttest": "npm run lint",
+    "lint": "eslint ."
+  },
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^2.13.1",
+    "eslint-config-loopback": "^4.0.0",
+    "loopback": "^3.0.0-alpha.1",
+    "mocha": "^2.5.3"
+  }
+}
