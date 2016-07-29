@@ -16,7 +16,7 @@ var domain = require('domain');
 //   https://github.com/othiym23/async-listener/issues/57
 // It all goes away when instrumentation is disabled.
 var cls = function() {
-  return require('continuation-local-storage');
+  return require('cls-hooked');
 };
 
 var LoopBackContext = module.exports;

@@ -1,7 +1,7 @@
 # loopback-context
 
 Current context for LoopBack applications, based on
-node-continuation-local-storage.
+cls-hooked.
 
 ## Usage
 
