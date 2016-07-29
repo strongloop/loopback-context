@@ -5,7 +5,7 @@
 
 'use strict';
 
-var ClsContext = require('../current-context');
+var LoopBackContext = require('../current-context');
 
 module.exports = context;
 
@@ -14,22 +14,23 @@ var name = 'loopback';
 /**
  * Context middleware.
  * ```js
+ * var perRequestContext = require(
+ *   'loopback-context/server/middleware/per-request-context.js');
  * var app = loopback();
- * app.use(loopback.context(options);
+ * app.use(perRequestContext(options);
  * app.use(loopback.rest());
  * app.listen();
  * ```
  * @options {Object} [options] Options for context
  * @property {String} name Context scope name.
- * @property {Boolean} enableHttpContext Whether HTTP context is enabled.  Default is false.
- * @header loopback.context([options])
+ * @property {Boolean} enableHttpContext Whether HTTP context is enabled. Default is false.
  */
 
 function context(options) {
   options = options || {};
   var scope = options.name || name;
   var enableHttpContext = options.enableHttpContext || false;
-  var ns = ClsContext.createContext(scope);
+  var ns = LoopBackContext.createContext(scope);
 
   // Return the middleware
   return function contextHandler(req, res, next) {
@@ -37,7 +38,7 @@ function context(options) {
       return next();
     }
 
-    ClsContext.runInContext(function processRequestInContext(ns, domain) {
+    LoopBackContext.runInContext(function processRequestInContext(ns, domain) {
       req.loopbackContext = ns;
 
       // Bind req/res event emitters to the given namespace

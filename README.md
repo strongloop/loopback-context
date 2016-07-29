@@ -1,4 +1,4 @@
-# loopback-context-cls
+# loopback-context
 
 Current context for LoopBack applications, based on
 node-continuation-local-storage.
@@ -11,7 +11,7 @@ node-continuation-local-storage.
 ```json
 {
   "initial": {
-    "loopback-context-cls#per-request-context": {
+    "loopback-context#per-request-context": {
     }
   }
 }
@@ -20,12 +20,12 @@ node-continuation-local-storage.
 2) Then you can access the context from your code:
 
 ```js
-var ClsContext = require('loopback-context-cls');
+var LoopBackContext = require('loopback-context');
 
 // ...
 
 MyModel.myMethod = function(cb) {
-  var ctx = ClsContext.getCurrentContext();
+  var ctx = LoopBackContext.getCurrentContext();
   ctx.get('key');
   ctx.set('key', { foo: 'bar' });
 });

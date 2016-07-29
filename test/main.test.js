@@ -12,7 +12,7 @@ var expect = require('./helpers/expect');
 var loopback = require('loopback');
 var request = require('supertest');
 
-describe('CLS Context', function() {
+describe('LoopBack Context', function() {
   var runInOtherDomain, runnerInterval;
 
   before(function setupRunInOtherDomain() {
@@ -38,6 +38,7 @@ describe('CLS Context', function() {
   it('preserves callback domain', function(done) {
     var app = loopback({localRegistry: true, loadBuiltinModels: true});
     app.set('remoting', {context: false});
+    app.set('legacyExplorer', false);
     app.use(require('../server/middleware/per-request-context')());
     app.use(loopback.rest());
     app.dataSource('db', {connector: 'memory'});
