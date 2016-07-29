@@ -5,13 +5,13 @@
 
 'use strict';
 
-var ClsContext = module.exports;
+var LoopBackContext = module.exports;
 
-ClsContext.getCurrentContext = function() {
+LoopBackContext.getCurrentContext = function() {
   return null;
 };
 
-ClsContext.runInContext =
-ClsContext.createContext = function() {
+LoopBackContext.runInContext =
+LoopBackContext.createContext = function() {
   throw new Error('Current context is not supported in the browser.');
 };
