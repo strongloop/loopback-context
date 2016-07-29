@@ -7,7 +7,6 @@
 
 var domain = require('domain');
 
-
 // Require CLS only when using the current context feature.
 // As soon as this require is done, all the instrumentation/patching
 // of async-listener is fired which is not ideal.
