@@ -1,6 +1,6 @@
 {
-  "name": "loopback-context-cls",
-  "version": "1.0.0-1",
+  "name": "loopback-context",
+  "version": "1.0.0",
   "description": "Current context for LoopBack applications, based on node-continuation-local-storage",
   "keywords": [
     "StrongLoop",
@@ -9,7 +9,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/strongloop/loopback-context-cls"
+    "url": "https://github.com/strongloop/loopback-context"
   },
   "main": "index.js",
   "browser": "browser.js",
