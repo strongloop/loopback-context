@@ -5,7 +5,7 @@
 
 'use strict';
 
-var cls = require('continuation-local-storage');
+var cls = require('cls-hooked');
 var domain = require('domain');
 
 var LoopBackContext = module.exports;
