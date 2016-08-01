@@ -7,7 +7,7 @@
 
 var LoopBackContext = require('../current-context');
 
-module.exports = context;
+module.exports = perRequestContextFactory;
 
 var name = 'loopback';
 
@@ -26,14 +26,14 @@ var name = 'loopback';
  * @property {Boolean} enableHttpContext Whether HTTP context is enabled. Default is false.
  */
 
-function context(options) {
+function perRequestContextFactory(options) {
   options = options || {};
   var scope = options.name || name;
   var enableHttpContext = options.enableHttpContext || false;
   var ns = LoopBackContext.createContext(scope);
 
   // Return the middleware
-  return function contextHandler(req, res, next) {
+  return function perRequestContext(req, res, next) {
     if (req.loopbackContext) {
       return next();
     }

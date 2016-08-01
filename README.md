@@ -5,13 +5,13 @@ node-continuation-local-storage.
 
 ## Usage
 
-1) Add `per-request-context` middleware to your
+1) Add `per-request` middleware to your
 `server/middleware-config.json`:
 
 ```json
 {
   "initial": {
-    "loopback-context#per-request-context": {
+    "loopback-context#per-request": {
     }
   }
 }
