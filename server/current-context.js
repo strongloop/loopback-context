@@ -6,6 +6,8 @@
 'use strict';
 
 var domain = require('domain');
+var requireOptional = require('optional');
+var deprecated = require('depd')('loopback');
 
 // Require CLS only when using the current context feature.
 // As soon as this require is done, all the instrumentation/patching
@@ -15,8 +17,28 @@ var domain = require('domain');
 // and other people have seen similar things:
 //   https://github.com/othiym23/async-listener/issues/57
 // It all goes away when instrumentation is disabled.
+var _isClsRequired = false;
 var cls = function() {
-  return require('continuation-local-storage');
+  var clsHooked = requireOptional('cls-hooked');
+  if (!clsHooked) {
+    // optional dependency not met
+    if (!_isClsRequired) {
+      // show deprecation warning only once
+      deprecated('loopback.getCurrentContext() is deprecated, due to issues ' +
+      'with continuation-local storage libraries, mostly with Node versions ' +
+      'less than 4.5, or between 5.0 and 5.10 (see async-hook for details). ' +
+      'Either upgrade Node to a version outside of these ranges and ' +
+      'reinstall cls-hooked locally, or see ' +
+      'https://docs.strongloop.com/display/APIC/Using%20current%20context ' +
+      'for more details. If you already upgraded Node, maybe this warning is ' +
+      'only because cls-hooked failed to install for some reason.');
+      _isClsRequired = true;
+    }
+    // fallback to legacy module
+    return require('continuation-local-storage');
+  } else {
+    return clsHooked;
+  }
 };
 
 var LoopBackContext = module.exports;
