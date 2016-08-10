@@ -5,7 +5,7 @@
 
 'use strict';
 
-var ClsContext = require('..');
+var LoopBackContext = require('..');
 var Domain = require('domain');
 var EventEmitter = require('events').EventEmitter;
 var expect = require('./helpers/expect');
@@ -39,7 +39,7 @@ describe('LoopBack Context', function() {
     var app = loopback({localRegistry: true, loadBuiltinModels: true});
     app.set('remoting', {context: false});
     app.set('legacyExplorer', false);
-    app.use(require('../server/middleware/per-request-context')());
+    app.use(LoopBackContext.perRequest());
     app.use(loopback.rest());
     app.dataSource('db', {connector: 'memory'});
 
@@ -48,7 +48,7 @@ describe('LoopBack Context', function() {
 
     // function for remote method
     TestModel.test = function(inst, cb) {
-      var tmpCtx = ClsContext.getCurrentContext();
+      var tmpCtx = LoopBackContext.getCurrentContext();
       if (tmpCtx) tmpCtx.set('data', 'a value stored in context');
       if (process.domain) cb = process.domain.bind(cb);  // IMPORTANT
       runInOtherDomain(cb);
@@ -63,7 +63,7 @@ describe('LoopBack Context', function() {
 
     // after remote hook
     TestModel.afterRemote('**', function(ctxx, inst, next) {
-      var tmpCtx = ClsContext.getCurrentContext();
+      var tmpCtx = LoopBackContext.getCurrentContext();
       if (tmpCtx) {
         ctxx.result.data = tmpCtx.get('data');
       } else {
@@ -85,12 +85,12 @@ describe('LoopBack Context', function() {
   });
 
   it('works outside REST middleware', function(done) {
-    ClsContext.runInContext(function() {
-      var ctx = ClsContext.getCurrentContext();
+    LoopBackContext.runInContext(function() {
+      var ctx = LoopBackContext.getCurrentContext();
       expect(ctx).is.an('object');
       ctx.set('test-key', 'test-value');
       process.nextTick(function() {
-        var ctx = ClsContext.getCurrentContext();
+        var ctx = LoopBackContext.getCurrentContext();
         expect(ctx).is.an('object');
         expect(ctx.get('test-key')).to.equal('test-value');
 

@@ -94,3 +94,10 @@ LoopBackContext.createContext = function(scopeName) {
   }
   return ns;
 };
+
+/**
+ * Create middleware that sets up a new context for each incoming HTTP request.
+ *
+ * See perRequestContextFactory for more details.
+ */
+LoopBackContext.perRequest = require('./middleware/per-request');
