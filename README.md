@@ -5,13 +5,13 @@ node-continuation-local-storage.
 
 ## WARNING
 
+**We recommend AGAINST using the loopback-context module until there is a stable solution to the issue below!**
+
 The module node-continuation-local-storage is known to have many problems,
 see e.g. [issue #59](https://github.com/othiym23/node-continuation-local-storage/issues/59).
 As a result, loopback-context does not work in many situations, as can be
 seen from issues reported in LoopBack's
 [issue tracker](https://github.com/strongloop/loopback/issues?utf8=%E2%9C%93&q=is%3Aissue%20getCurrentcontext).
-
-**We recommend AGAINST using this module.**
 
 If you are running on Node v6, you can try the new alternative
 [cls-hooked](https://github.com/Jeff-Lewis/cls-hooked).
