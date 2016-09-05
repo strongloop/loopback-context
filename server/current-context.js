@@ -116,3 +116,7 @@ LoopBackContext.createContext = function(scopeName) {
   }
   return ns;
 };
+
+LoopBackContext.handleWarnings = function(clsHookedInterceptorInstance, cb) {
+  clsHookedInterceptorInstance(cb);
+};

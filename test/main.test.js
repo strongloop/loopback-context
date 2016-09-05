@@ -18,6 +18,11 @@ var Domain = require('domain');
 var EventEmitter = require('events').EventEmitter;
 var expect = require('./helpers/expect');
 var request = require('supertest');
+var spies = require('chai-spies');
+var chai = require('chai');
+var clsHookedInterceptor;
+
+chai.use(spies);
 
 describe('LoopBack Context', function() {
   var runInOtherDomain, runnerInterval;
@@ -172,5 +177,16 @@ describe('cls-hooked-interceptor', function() {
       };
       asyncFn();
     });
+  });
+});
+
+describe('LoopBack Context', function() {
+  it('replaces cls-hooked-interceptor callback', function() {
+    var cb = function() {};
+    var spy = chai.spy(cb);
+    ClsContext.handleWarnings(require('cls-hooked-interceptor'), spy);
+    // trick cls-hooked-interceptor
+    require('async');
+    expect(spy).to.have.been.called();
   });
 });
