@@ -5,11 +5,18 @@
 
 'use strict';
 
+// If you wish to test when NOT losing context,
+// set the environment variable KEEP_CONTEXT to the string 'true'.
+// See README for more info.
+var keepContext = process.env.KEEP_CONTEXT === 'true';
+if (keepContext) {
+  require('cls-hooked');
+}
 var ClsContext = require('..');
+var loopback = require('loopback');
 var Domain = require('domain');
 var EventEmitter = require('events').EventEmitter;
 var expect = require('./helpers/expect');
-var loopback = require('loopback');
 var request = require('supertest');
 
 describe('LoopBack Context', function() {
@@ -96,6 +103,73 @@ describe('LoopBack Context', function() {
 
         done();
       });
+    });
+  });
+});
+
+describe('cls-hooked-interceptor', function() {
+  it('does ' +
+    (keepContext ? 'not ' : '') +
+    'warn when async waterfall does ' +
+    (keepContext ? 'not ' : '') +
+    'lose context',
+  function(done) {
+    // If you wish to test if NOT losing context,
+    // set loseContext to false at the top of the file.
+
+    // Begin intercepting async calls
+    var warnedDangerousAsyncImport = false;
+    require('cls-hooked-interceptor')(function(warning) {
+      if (warning.code !== 'EASYNCCODE') {
+        console.warn(warning.message);
+      }
+      if (warning.code === 'ECLSAFTERINCOMPATIBLEMODULE') {
+        warnedDangerousAsyncImport = true;
+      }
+    });
+    // trick cls-hooked-interceptor
+    if (keepContext) {
+      require('cls-hooked');
+    }
+    // Make cls-hooked-interceptor emit warnings
+    // ASYNC VERSION MATTERS! 1.5.2 is required in order for this test to pass.
+    var async = require('async');
+    ClsContext.runInContext(function() {
+      // function 1 which pulls context
+      var fn1 = function(cb) {
+        var ctx = ClsContext.getCurrentContext();
+        expect(ctx).is.an('object');
+        ctx.set('test-key', 'test-value');
+        cb();
+      };
+      // function 2 which pulls context
+      var fn2 =  function(cb) {
+        var ctx = ClsContext.getCurrentContext();
+        if (keepContext) {
+          expect(ctx).is.an('object');
+        } else {
+          expect(ctx).is.not.an('object');
+        }
+        var testValue = ctx && ctx.get('test-key', 'test-value');
+        cb(null, testValue);
+      };
+      // Trigger async waterfall callbacks
+      var asyncFn = function() {
+        async.waterfall([
+          fn1,
+          fn2,
+        ], function(err, testValue) {
+          if (keepContext) {
+            expect(testValue).to.equal('test-value');
+            expect(warnedDangerousAsyncImport).to.be.false();
+          } else {
+            expect(testValue).to.not.equal('test-value');
+            expect(warnedDangerousAsyncImport).to.be.true();
+          }
+          done();
+        });
+      };
+      asyncFn();
     });
   });
 });
