@@ -114,8 +114,9 @@ describe('cls-hooked-interceptor', function() {
     (keepContext ? 'not ' : '') +
     'lose context',
   function(done) {
-    // If you wish to test if NOT losing context,
-    // set loseContext to false at the top of the file.
+    // If you wish to test when NOT losing context,
+    // set the environment variable KEEP_CONTEXT to the string 'true'.
+    // See at the top of the file; also, see README for more info.
 
     // Begin intercepting async calls
     var warnedDangerousAsyncImport = false;
