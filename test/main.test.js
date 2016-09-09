@@ -5,6 +5,8 @@
 
 'use strict';
 
+// ASYNC VERSION MATTERS! 1.5.2 is required in order for this test to work.
+var async = require('async');
 var LoopBackContext = require('..');
 var Domain = require('domain');
 var EventEmitter = require('events').EventEmitter;
@@ -96,6 +98,41 @@ describe('LoopBack Context', function() {
 
         done();
       });
+    });
+  });
+
+  // Credits for the original idea for this test case to @marlonkjoseph
+  // Original source of the POC gist of the idea:
+  // https://gist.github.com/marlonkjoseph/f42f3c71f746896a0d4b7279a34ea753
+  // Heavily edited by others
+  it('keeps context when using waterfall() from async 1.5.2',
+  function(done) {
+    LoopBackContext.runInContext(function() {
+      // function 1 which pulls context
+      var fn1 = function(cb) {
+        var ctx = LoopBackContext.getCurrentContext();
+        expect(ctx).is.an('object');
+        ctx.set('test-key', 'test-value');
+        cb();
+      };
+      // function 2 which pulls context
+      var fn2 =  function(cb) {
+        var ctx = LoopBackContext.getCurrentContext();
+        expect(ctx).is.an('object');
+        var testValue = ctx && ctx.get('test-key', 'test-value');
+        cb(null, testValue);
+      };
+      // Trigger async waterfall callbacks
+      var asyncFn = function() {
+        async.waterfall([
+          fn1,
+          fn2,
+        ], function(err, testValue) {
+          expect(testValue).to.equal('test-value');
+          done();
+        });
+      };
+      asyncFn();
     });
   });
 });

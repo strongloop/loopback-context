@@ -14,7 +14,7 @@
   "main": "server/current-context.js",
   "browser": "browser/current-context.js",
   "scripts": {
-    "test": "mocha",
+    "test": "mocha -r cls-hooked",
     "posttest": "npm run lint",
     "lint": "eslint ."
   },
@@ -23,6 +23,7 @@
     "cls-hooked": "^4.0.1"
   },
   "devDependencies": {
+    "async": "1.5.2",
     "chai": "^3.5.0",
     "dirty-chai": "^1.2.2",
     "eslint": "^2.13.1",
