@@ -1,6 +1,9 @@
 {
   "name": "loopback-context",
   "version": "1.0.0",
+  "publishConfig": {
+    "tag": "lts"
+  },
   "description": "Current context for LoopBack applications, based on node-continuation-local-storage",
   "keywords": [
     "StrongLoop",
