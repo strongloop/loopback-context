@@ -1,9 +1,9 @@
 {
   "name": "loopback-context",
   "version": "3.0.0-alpha.1",
-  "description": "Current context for LoopBack applications, based on node-continuation-local-storage",
+  "description": "Current context for LoopBack applications, based on cls-hooked",
   "engines": {
-    "node": ">=4"
+    "node": "^4.5 || ^5.10 || ^6.0"
   },
   "keywords": [
     "StrongLoop",
@@ -23,9 +23,10 @@
   },
   "license": "MIT",
   "dependencies": {
-    "continuation-local-storage": "^3.1.7"
+    "cls-hooked": "^4.0.1"
   },
   "devDependencies": {
+    "async": "1.5.2",
     "chai": "^3.5.0",
     "dirty-chai": "^1.2.2",
     "eslint": "^2.13.1",

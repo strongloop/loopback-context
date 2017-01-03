@@ -5,6 +5,7 @@
 
 'use strict';
 
+var async = require('async');
 var LoopBackContext = require('..');
 var Domain = require('domain');
 var EventEmitter = require('events').EventEmitter;
@@ -96,6 +97,36 @@ describe('LoopBack Context', function() {
 
         done();
       });
+    });
+  });
+
+  // Credits for the original idea for this test case to @marlonkjoseph
+  // Original source of the POC gist of the idea:
+  // https://gist.github.com/marlonkjoseph/f42f3c71f746896a0d4b7279a34ea753
+  // Heavily edited by others
+  it('keeps context when using waterfall() from async 1.5.2',
+  function(done) {
+    expect(require('async/package.json').version).to.equal('1.5.2');
+    LoopBackContext.runInContext(function() {
+      // Trigger async waterfall callbacks
+      async.waterfall([
+        function pushToContext(next) {
+          var ctx = LoopBackContext.getCurrentContext();
+          expect(ctx).is.an('object');
+          ctx.set('test-key', 'test-value');
+          next();
+        },
+        function pullFromContext(next) {
+          var ctx = LoopBackContext.getCurrentContext();
+          expect(ctx).is.an('object');
+          var testValue = ctx && ctx.get('test-key', 'test-value');
+          next(null, testValue);
+        },
+        function verify(testValue, next) {
+          expect(testValue).to.equal('test-value');
+          next();
+        },
+      ], done);
     });
   });
 });
