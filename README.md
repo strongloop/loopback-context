@@ -1,56 +1,74 @@
 # loopback-context
 
-Current context for LoopBack applications, based on
-cls-hooked.
-
-## USAGE WARNING
-
-**Only if you use this package, it's recommended to not run your app using `slc run` or `node .`**
-
-Run using (recommended):
-
-`node -r cls-hooked .`
-
-This uses the `-r` option in order to require `cls-hooked` before your app (see warnings below for more info).
-
-If you wish to use `strong-supervisor`, you would need to pass node options to `slc run`, which currently has issues, according to [strong-supervisor#56](https://github.com/strongloop/strong-supervisor/issues/56).
-
-A less reliable, less recommended way, which instead should be compatible with `strong-supervisor`, would be to add this Javascript line at the first line of your app, and no later than that (**the order of require statements matters**):
-
-`require('cls-hooked')`
-
-Warning: to rely on the order of `require` statements is error-prone.
-
-## INSTALL WARNING
-
-**Only if you use this package, do NOT install your app using `npm install`.**
-
-Install using:
-
-```
-npm config set engine-strict true
-npm install
-```
-
-This keeps you from using Node < v4.5.
+Current context for LoopBack applications, based on cls-hooked.
 
 ## WARNING
 
-**We recommend AGAINST using the loopback-context module until there is a stable solution to the issue below!**
+**`cls-hooked` module uses undocumented `AsyncWrap` API that was introduced to Node.js relatively recently. While this new API seems to be more reliable than the old `async-listener` used by `continuation-local-storage`, there are still cases where the context (local storage) is not preserved correctly. Please consider this risk before using loopback-context.**
 
-The module node-continuation-local-storage is known to have many problems,
-see e.g. [issue #59](https://github.com/othiym23/node-continuation-local-storage/issues/59).
-As a result, loopback-context does not work in many situations, as can be
-seen from issues reported in LoopBack's
-[issue tracker](https://github.com/strongloop/loopback/issues?utf8=%E2%9C%93&q=is%3Aissue%20getCurrentcontext).
+### Known issues
 
-The new alternative
-[cls-hooked](https://github.com/Jeff-Lewis/cls-hooked) is known to possibly inherit these problems if it's not imported before everything else, that's why you are required to follow the advice above if using this.
+ - [when](https://www.npmjs.com/package/when), a popular Promise
+   implementation, breaks context propagation. Please consider using the
+   built-in `Promise` implementation provided by Node.js or
+   [Bluebird](https://www.npmjs.com/package/bluebird) instead.
+
+   Discussion: https://github.com/strongloop/loopback-context/issues/17
+
+In general, any module that implements a custom task queue or a connection pool
+is prone to break context storage. This is an inherent problem of continuation
+local storage that needs to be fixed at lower level - first in Node.js core
+and then in modules implementing task queues and connection pools.
+
+## Installation
+
+```
+$ npm install --save loopback-context cls-hooked
+```
+
+Make sure you are running on a Node.js version supported by this module
+(`^4.5`, `^5.10` or `^6.0`). When installing, check the output of `npm install`
+and make sure there are no `engine` related warnings.
 
 ## Usage
 
-1) Add `per-request` middleware to your
-`server/middleware-config.json`:
+### Setup cls-hooked
+
+To minimize the likelihood of loosing context in your application, you should
+ensure that `cls-hooked` is loaded as the first module of your application, so
+that it can wrap certain Node.js APIs before any other modules start using these
+APIs.
+
+Our recommended approach is to add `-r cls-hooked` to node's list of
+arguments when starting your LoopBack application.
+
+```
+$ node -r cls-hooked .
+```
+
+If you are using a process manager like `strong-pm` or `pm2`, then consult
+their documentation whether it's possible to configure the arguments used to
+spawn worker processes. Note that `slc run` does not support this feature yet,
+see [strong-supervisor#56](https://github.com/strongloop/strong-supervisor/issues/56).
+
+Alternatively, you can add the following line as the first line of your main
+application file:
+
+```js
+require('cls-hooked');
+```
+
+This approach should be compatible with all process managers, including
+`strong-pm`. However, we feel that relying on the order of `require` statements
+is error-prone.
+
+
+### Configure context propagation
+
+To setup your LoopBack application to create a new context for each incoming
+HTTP request, configure `per-context` middleware in your
+`server/middleware.json` as follows:
+
 
 ```json
 {
@@ -61,7 +79,28 @@ The new alternative
 }
 ```
 
-2) Then you can access the context from your code:
+**IMPORTANT: By default, the HTTP req/res objects are not set onto the current context. You
+need to set `enableHttpContext` to true to enable automatic population
+of req/res objects.**
+
+```json
+{
+  "initial": {
+    "loopback-context#per-request": {
+      "params": {
+        "enableHttpContext": true
+      }
+    }
+  }
+}
+```
+
+### Use the current context
+
+Once you’ve enabled context propagation, you can access the current context
+object using `LoopBackContext.getCurrentContext()`. The context will be
+available in middleware (if it is loaded after the context middleware),
+remoting hooks, model hooks, and custom methods.
 
 ```js
 var LoopBackContext = require('loopback-context');
@@ -75,6 +114,73 @@ MyModel.myMethod = function(cb) {
 });
 ```
 
-See the official LoopBack
-[documentation](https://docs.strongloop.com/display/APIC/Using+current+context)
-for more details.
+### Use current authenticated user in remote methods
+
+In advanced use cases, for example when you want to add custom middleware, you
+have to add the context middleware at the right position in the middleware
+chain (before the middleware that depends on
+`LoopBackContext.getCurrentContext`).
+
+**IMPORTANT: `LoopBackContext.perRequest()` detects the situation when it is
+invoked multiple times on the same request and returns immediately in
+subsequent runs.**
+
+Here is a snippet using a middleware function to place the currently
+authenticated user into the context so that remote methods may use it:
+
+**server/middleware/store-current-user.js**
+```js
+module.exports = function(options) {
+  return function storeCurrentUser(req, res, next) {
+    if (!req.accessToken) {
+      return next();
+    }
+
+    app.models.UserModel.findById(req.accessToken.userId, function(err, user) {
+      if (err) {
+        return next(err);
+      }
+      if (!user) {
+        return next(new Error('No user with this access token was found.'));
+      }
+      var loopbackContext = LoopBackContext.getCurrentContext();
+      if (loopbackContext) {
+        loopbackContext.set('currentUser', user);
+      }
+      next();
+    });
+  };
+};
+```
+
+**server/middleware.json**
+```json
+{
+  "initial": {
+    "loopback-context#per-request": {}
+  },
+  "auth": {
+    "loopback#token": {}
+  },
+  "auth:after": {
+    "./middleware/set-current-user": {}
+  }
+}
+```
+
+**common/models/YourModel.json**
+```js
+var LoopBackContext = require('loopback-context');
+module.exports = function(YourModel) {
+  ...
+  //remote method
+  YourModel.someRemoteMethod = function(arg1, arg2, cb) {
+    var ctx = LoopBackContext.getCurrentContext();
+    var currentUser = ctx && ctx.get('currentUser');
+    console.log('currentUser.username: ', currentUser.username); // voila!
+    ...
+    cb(null);
+  };
+  ...
+};
+```
