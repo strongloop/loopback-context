@@ -6,6 +6,7 @@
 'use strict';
 
 var async = require('async');
+var when = require('when');
 var LoopBackContext = require('..');
 var Domain = require('domain');
 var EventEmitter = require('events').EventEmitter;
@@ -128,5 +129,51 @@ describe('LoopBack Context', function() {
         },
       ], done);
     });
+  });
+  it('doesn\'t mix up contexts if using concurrently then() from when 3.7.7',
+  function() {
+    expect(require('when/package.json').version).to.equal('3.7.7');
+    var timeout = 50;
+    // Concurrent execution number 1 of 2
+    var execution1 = new Promise(function execution1(outerResolve, reject) {
+      LoopBackContext.runInContext(function pushToContext1() {
+        var ctx = LoopBackContext.getCurrentContext();
+        expect(ctx).is.an('object');
+        ctx.set('test-key', 'test-value-1');
+        var whenPromise = when.promise(function(resolve) {
+          setTimeout(resolve, timeout);
+        });
+        whenPromise.then(function pullFromContext1() {
+          var testValue = ctx && ctx.get('test-key', 'test-value-1');
+          return testValue;
+        }).then(function verify1(testValue) {
+          expect(testValue).to.equal('test-value-1');
+          outerResolve();
+        }).catch(function(error) {
+          reject(error);
+        });
+      });
+    });
+    // Concurrent execution number 2 of 2
+    var execution2 = new Promise(function execution1(outerResolve, reject) {
+      LoopBackContext.runInContext(function pushToContext2() {
+        var ctx = LoopBackContext.getCurrentContext();
+        expect(ctx).is.an('object');
+        ctx.set('test-key', 'test-value-2');
+        var whenPromise = when.promise(function(resolve) {
+          setTimeout(resolve, timeout);
+        });
+        whenPromise.then(function pullFromContext2() {
+          var testValue = ctx && ctx.get('test-key', 'test-value-2');
+          return testValue;
+        }).then(function verify2(testValue) {
+          expect(testValue).to.equal('test-value-2');
+          outerResolve();
+        }).catch(function(error) {
+          reject(error);
+        });
+      });
+    });
+    return Promise.all([execution1, execution2]);
   });
 });
