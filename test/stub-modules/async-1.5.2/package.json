@@ -1,0 +1,8 @@
+{
+  "name": "async-1.5.2",
+  "version": "1.5.2",
+  "description":"async version 1.5.2",
+  "dependencies": {
+    "async":"1.5.2"
+  }
+}
