@@ -80,8 +80,8 @@ LoopBackContext.createContext = function(scopeName) {
     LoopBackContext.getCurrentContext = function() {
       if (ns && ns.active) {
         var boundMethods = {
-          get: ns.bind(ns.get).bind(ns),
-          set: ns.bind(ns.set).bind(ns),
+          get: ns.bind(ns.get),
+          set: ns.bind(ns.set),
         };
         var handler = {
           get: function(target, name) {
