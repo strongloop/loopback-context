@@ -78,19 +78,22 @@ LoopBackContext.createContext = function(scopeName) {
     process.context[scopeName] = ns;
     // Set up LoopBackContext.getCurrentContext()
     LoopBackContext.getCurrentContext = function() {
-      var boundMethods = {
-        get: ns.bind(ns.get).bind(ns),
-        set: ns.bind(ns.set).bind(ns),
-      };
-      var handler = {
-        get: function(target, name) {
-          return ['get', 'set'].includes(name) ?
-          boundMethods[name] :
-          target[name];
-        },
-      };
-      var proxy = new Proxy(ns, handler);
-      return ns && ns.active ? proxy : null;
+      if (ns && ns.active) {
+        var boundMethods = {
+          get: ns.bind(ns.get).bind(ns),
+          set: ns.bind(ns.set).bind(ns),
+        };
+        var handler = {
+          get: function(target, name) {
+            return ['get', 'set'].includes(name) ?
+            boundMethods[name] :
+            target[name];
+          },
+        };
+        return new Proxy(ns, handler);
+      } else {
+        return null;
+      }
     };
   }
   return ns;
