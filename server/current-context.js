@@ -79,6 +79,12 @@ LoopBackContext.createContext = function(scopeName) {
     // Set up LoopBackContext.getCurrentContext()
     LoopBackContext.getCurrentContext = function() {
       if (ns && ns.active) {
+        /**
+         * **NOTE**
+         * This only re-binds get and set methods, the most used.
+         * If you use other methods of the context, e.g. runInContext(), etc.,
+         * you may run into unexpected issues that are fixed only for get, set.
+         */
         var boundMethods = {
           get: ns.bind(ns.get),
           set: ns.bind(ns.set),
