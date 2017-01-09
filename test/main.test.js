@@ -129,49 +129,40 @@ describe('LoopBack Context', function() {
       ], done);
     });
   });
-  it('doesn\'t mix up contexts if using concurrently then() from when 3.7.7',
+  it('handles concurrent then() calls with when v3.7.7 promises & bind option',
   function() {
-    var timeout = 50;
-    // Concurrent execution number 1 of 2
-    var execution1 = new Promise(function execution1(outerResolve, reject) {
-      LoopBackContext.runInContext(function pushToContext1() {
-        var ctx = LoopBackContext.getCurrentContext();
-        expect(ctx).is.an('object');
-        ctx.set('test-key', 'test-value-1');
-        var whenPromise = whenV377.promise(function(resolve) {
-          setTimeout(resolve, timeout);
-        });
-        whenPromise.then(function pullFromContext1() {
-          var testValue = ctx && ctx.get('test-key', 'test-value-1');
-          return testValue;
-        }).then(function verify1(testValue) {
-          expect(testValue).to.equal('test-value-1');
-          outerResolve();
-        }).catch(function(error) {
-          reject(error);
-        });
-      });
-    });
-    // Concurrent execution number 2 of 2
-    var execution2 = new Promise(function execution1(outerResolve, reject) {
-      LoopBackContext.runInContext(function pushToContext2() {
-        var ctx = LoopBackContext.getCurrentContext();
-        expect(ctx).is.an('object');
-        ctx.set('test-key', 'test-value-2');
-        var whenPromise = whenV377.promise(function(resolve) {
-          setTimeout(resolve, timeout);
-        });
-        whenPromise.then(function pullFromContext2() {
-          var testValue = ctx && ctx.get('test-key', 'test-value-2');
-          return testValue;
-        }).then(function verify2(testValue) {
-          expect(testValue).to.equal('test-value-2');
-          outerResolve();
-        }).catch(function(error) {
-          reject(error);
+    var timeout = 25;
+    function runWithPushedValue(pushedValue, bind, expectToFail) {
+      return new Promise(function concurrentExecution(outerResolve, reject) {
+        LoopBackContext.runInContext(function pushToContext() {
+          var ctx = LoopBackContext.getCurrentContext({bind: bind});
+          expect(ctx).is.an('object');
+          ctx.set('test-key', pushedValue);
+          var whenPromise = whenV377.promise(function(resolve) {
+            setTimeout(resolve, timeout);
+          });
+          whenPromise.then(function pullFromContext() {
+            var pulledValue = ctx && ctx.get('test-key');
+            return pulledValue;
+          }).then(function verify(pulledValue) {
+            if (bind) {
+              expect(pulledValue).to.equal(pushedValue);
+            } else if (expectToFail) {
+              expect(pulledValue).to.not.equal(pushedValue);
+            }
+            outerResolve();
+          }).catch(reject);
         });
       });
+    }
+    return Promise.all([
+      runWithPushedValue('test-value-1', true),
+      runWithPushedValue('test-value-2', true),
+    ]).then(function() {
+      return Promise.all([
+        runWithPushedValue('test-value-3'),
+        runWithPushedValue('test-value-4', false, true),
+      ]);
     });
-    return Promise.all([execution1, execution2]);
   });
 });

@@ -77,29 +77,23 @@ LoopBackContext.createContext = function(scopeName) {
     ns = cls.createNamespace(scopeName);
     process.context[scopeName] = ns;
     // Set up LoopBackContext.getCurrentContext()
-    LoopBackContext.getCurrentContext = function() {
-      if (ns && ns.active) {
-        /**
-         * **NOTE**
-         * This only re-binds get and set methods, the most used.
-         * If you use other methods of the context, e.g. runInContext(), etc.,
-         * you may run into unexpected issues that are fixed only for get, set.
-         */
-        var boundMethods = {
-          get: ns.bind(ns.get),
-          set: ns.bind(ns.set),
-        };
-        var handler = {
-          get: function(target, name) {
-            return ['get', 'set'].includes(name) ?
-            boundMethods[name] :
-            target[name];
-          },
-        };
-        return new Proxy(ns, handler);
-      } else {
+    LoopBackContext.getCurrentContext = function(options) {
+      if (!ns || !ns.active) {
         return null;
       }
+      if (!options || !options.bind) {
+        return ns;
+      }
+      /**
+       * **NOTE**
+       * This only re-binds get and set methods, the most used.
+       * If you use other methods of the context, e.g. runInContext(), etc.,
+       * you may run into unexpected issues that are fixed only for get & set.
+       */
+      var boundContext = Object.create(ns);
+      boundContext.get = ns.bind(ns.get);
+      boundContext.set = ns.bind(ns.set);
+      return boundContext;
     };
   }
   return ns;
