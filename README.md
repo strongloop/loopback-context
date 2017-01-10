@@ -62,15 +62,25 @@ This approach should be compatible with all process managers, including
 `strong-pm`. However, we feel that relying on the order of `require` statements
 is error-prone.
 
-### Re-bind for concurrency
+### Bind for concurrency
 
 In order to workaround the aforementioned concurrency issue with `when` (and
 similar `Promise`-like and other libraries implementing custom queues and/or
-connection pools), it's recommended to activate context re-binding inside each
+connection pools), it's recommended to activate context binding inside each
 HTTP request or concurrent `runInContext()` call, by using the `bind` option, as
 in this example:
 
     var ctx = LoopBackContext.getCurrentContext({ bind: true });
+
+With the option enabled, this both creates the context, and binds the access
+methods of the context (i.e. `get` and `set`), at once.
+
+**Warning**: this only works if it's **the first expression evaluated** in every
+middleware/operation hook/`runInContext()` call etc. that uses
+`getCurrentContext`. (It must be the first expression; it may not be enough if
+it's at the first line). Explanation: you must bind the context while it's still
+correct, i.e. before it gets mixed up between concurrent operations affected by
+bugs. Therefore, to be sure, you must bind it before *any* operation.
 
 The `bind` option defaults to `false`. This is only in order to prevent breaking
 legacy apps; but if your app doesn't have such issue, then you can safely use
