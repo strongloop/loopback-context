@@ -112,6 +112,7 @@ MyModel.myMethod = function(cb) {
   ctx.set('key', { foo: 'bar' });
 });
 ```
+
 ### Bind for concurrency
 
 In order to workaround the aforementioned concurrency issue with `when` (and
