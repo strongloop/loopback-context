@@ -151,34 +151,35 @@ describe('LoopBack Context', function() {
         });
       });
     }
-    var successfulPromise = Promise.all([
+    function getFailureCount(values) {
+      var failureCount = 0;
+      values.forEach(function(v) {
+        if (v.pulledValue !== v.pushedValue) {
+          failureCount++;
+        }
+      });
+      return failureCount;
+    }
+    var successfulRun = Promise.all([
       runWithPushedValue('test-value-1', true),
       runWithPushedValue('test-value-2', true),
     ])
     .then(function verify(values) {
-      values.forEach(function(v) {
-        expect(v.pulledValue).to.equal(v.pushedValue);
-      });
+      var failureCount = getFailureCount(values);
+      expect(failureCount).to.equal(0);
     });
-    return successfulPromise
+    return successfulRun
     .then(function() {
-      var failingPromise = Promise.all([
+      var maybeFailingRun = Promise.all([
         runWithPushedValue('test-value-3'),
         runWithPushedValue('test-value-4'),
       ])
       .then(function verify(values) {
         // Expect one of the two runners to fail, no matter which one
-        var failureCount = 0;
-        values.forEach(function(v) {
-          try {
-            expect(v.pulledValue).to.equal(v.pushedValue);
-          } catch (e) {
-            failureCount++;
-          }
-        });
+        var failureCount = getFailureCount(values);
         expect(failureCount).to.be.at.most(1);
       });
-      return failingPromise;
+      return maybeFailingRun;
     });
   });
 });
