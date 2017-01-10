@@ -132,10 +132,10 @@ describe('LoopBack Context', function() {
   it('handles concurrent then() calls with when v3.7.7 promises & bind option',
   function() {
     var timeout = 25;
-    function runWithPushedValue(pushedValue) {
+    function runWithPushedValue(pushedValue, bind) {
       return new Promise(function concurrentExecution(outerResolve, reject) {
         LoopBackContext.runInContext(function pushToContext() {
-          var ctx = LoopBackContext.getCurrentContext({bind: true});
+          var ctx = LoopBackContext.getCurrentContext({bind: bind});
           expect(ctx).is.an('object');
           ctx.set('test-key', pushedValue);
           var whenPromise = whenV377.promise(function(resolve) {
@@ -144,16 +144,43 @@ describe('LoopBack Context', function() {
           whenPromise.then(function pullFromContext() {
             var pulledValue = ctx && ctx.get('test-key');
             return pulledValue;
-          }).then(function verify(pulledValue) {
-            expect(pulledValue).to.equal(pushedValue);
-            outerResolve();
+          }).then(function returnValues(pulledValue) {
+            outerResolve({
+              pulledValue: pulledValue,
+              pushedValue: pushedValue,
+            });
           }).catch(reject);
         });
       });
     }
-    return Promise.all([
-      runWithPushedValue('test-value-1'),
-      runWithPushedValue('test-value-2'),
-    ]);
+    var successfulPromise = Promise.all([
+      runWithPushedValue('test-value-1', true),
+      runWithPushedValue('test-value-2', true),
+    ])
+    .then(function verify(values) {
+      values.forEach(function(v) {
+        expect(v.pulledValue).to.equal(v.pushedValue);
+      });
+    });
+    return successfulPromise
+    .then(function() {
+      var failingPromise = Promise.all([
+        runWithPushedValue('test-value-3'),
+        runWithPushedValue('test-value-4'),
+      ])
+      .then(function verify(values) {
+        // Expect one of the two runners to fail, no matter which one
+        var failureCount = 0;
+        values.forEach(function(v) {
+          try {
+            expect(v.pulledValue).to.equal(v.pushedValue);
+          } catch (e) {
+            failureCount++;
+          }
+        });
+        expect(failureCount).to.equal(1);
+      });
+      return failingPromise;
+    });
   });
 });
