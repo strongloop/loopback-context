@@ -141,10 +141,8 @@ describe('LoopBack Context', function() {
           var whenPromise = whenV377.promise(function(resolve) {
             setTimeout(resolve, timeout);
           });
-          whenPromise.then(function pullFromContext() {
+          whenPromise.then(function pullFromContextAndReturn() {
             var pulledValue = ctx && ctx.get('test-key');
-            return pulledValue;
-          }).then(function returnValues(pulledValue) {
             outerResolve({
               pulledValue: pulledValue,
               pushedValue: pushedValue,
