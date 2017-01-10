@@ -62,6 +62,24 @@ This approach should be compatible with all process managers, including
 `strong-pm`. However, we feel that relying on the order of `require` statements
 is error-prone.
 
+### Re-bind for concurrency
+
+In order to workaround the aforementioned concurrency issue with `when` (and
+similar `Promise`-like and other libraries implementing custom queues and/or
+connection pools), it's recommended to activate context re-binding inside each
+HTTP request or concurrent `runInContext()` call, by using the `bind` option, as
+in this example:
+
+    var ctx = LoopBackContext.getCurrentContext({ bind: true });
+
+The `bind` option defaults to `false` (only in order to prevent breaking legacy
+apps). But if you are writing a new app, for example, you can safely use
+`bind: true` everywhere in your app.
+
+**Warning**: this only applies to application modules. In fact, if the module
+affected by the concurrency issue is of this kind, you can easily refactor/write
+your own code so to enable `bind`. Not if it's a 3rd-party module, nor a
+Loopback non-core module, unless you fork and fix it.
 
 ### Configure context propagation
 
