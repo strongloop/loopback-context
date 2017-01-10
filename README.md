@@ -72,9 +72,11 @@ in this example:
 
     var ctx = LoopBackContext.getCurrentContext({ bind: true });
 
-The `bind` option defaults to `false` (only in order to prevent breaking legacy
-apps). But if you are writing a new app, for example, you can safely use
-`bind: true` everywhere in your app.
+The `bind` option defaults to `false`. This is only in order to prevent breaking
+legacy apps; but if your app doesn't have such issue, then you can safely use
+`bind: true` everywhere in your app (e.g. with a
+[codemod](https://github.com/facebook/jscodeshift), or by monkey-patching
+`getCurrentContext()` globally, if you prefer an automated fashion).
 
 **Warning**: this only applies to application modules. In fact, if the module
 affected by the concurrency issue is of this kind, you can easily refactor/write
