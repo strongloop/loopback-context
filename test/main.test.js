@@ -176,7 +176,7 @@ describe('LoopBack Context', function() {
             failureCount++;
           }
         });
-        expect(failureCount).to.equal(1);
+        expect(failureCount).to.be.at.most(1);
       });
       return failingPromise;
     });
