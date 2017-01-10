@@ -132,10 +132,10 @@ describe('LoopBack Context', function() {
   it('handles concurrent then() calls with when v3.7.7 promises & bind option',
   function() {
     var timeout = 25;
-    function runWithPushedValue(pushedValue, bind, expectToFail) {
+    function runWithPushedValue(pushedValue) {
       return new Promise(function concurrentExecution(outerResolve, reject) {
         LoopBackContext.runInContext(function pushToContext() {
-          var ctx = LoopBackContext.getCurrentContext({bind: bind});
+          var ctx = LoopBackContext.getCurrentContext({bind: true});
           expect(ctx).is.an('object');
           ctx.set('test-key', pushedValue);
           var whenPromise = whenV377.promise(function(resolve) {
@@ -145,24 +145,15 @@ describe('LoopBack Context', function() {
             var pulledValue = ctx && ctx.get('test-key');
             return pulledValue;
           }).then(function verify(pulledValue) {
-            if (bind) {
-              expect(pulledValue).to.equal(pushedValue);
-            } else if (expectToFail) {
-              expect(pulledValue).to.not.equal(pushedValue);
-            }
+            expect(pulledValue).to.equal(pushedValue);
             outerResolve();
           }).catch(reject);
         });
       });
     }
     return Promise.all([
-      runWithPushedValue('test-value-1', true),
-      runWithPushedValue('test-value-2', true),
-    ]).then(function() {
-      return Promise.all([
-        runWithPushedValue('test-value-3'),
-        runWithPushedValue('test-value-4', false, true),
-      ]);
-    });
+      runWithPushedValue('test-value-1'),
+      runWithPushedValue('test-value-2'),
+    ]);
   });
 });
