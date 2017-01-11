@@ -129,38 +129,10 @@ describe('LoopBack Context', function() {
       ], done);
     });
   });
+
   it('handles concurrent then() calls with when v3.7.7 promises & bind option',
   function() {
-    var timeout = 25;
-    function runWithPushedValue(pushedValue, bind) {
-      return new Promise(function concurrentExecution(outerResolve, reject) {
-        LoopBackContext.runInContext(function pushToContext() {
-          var ctx = LoopBackContext.getCurrentContext({bind: bind});
-          expect(ctx).is.an('object');
-          ctx.set('test-key', pushedValue);
-          var whenPromise = whenV377.promise(function(resolve) {
-            setTimeout(resolve, timeout);
-          });
-          whenPromise.then(function pullFromContextAndReturn() {
-            var pulledValue = ctx && ctx.get('test-key');
-            outerResolve({
-              pulledValue: pulledValue,
-              pushedValue: pushedValue,
-            });
-          }).catch(reject);
-        });
-      });
-    }
-    function getFailureCount(values) {
-      var failureCount = 0;
-      values.forEach(function(v) {
-        if (v.pulledValue !== v.pushedValue) {
-          failureCount++;
-        }
-      });
-      return failureCount;
-    }
-    var successfulRun = Promise.all([
+    return Promise.all([
       runWithPushedValue('test-value-1', true),
       runWithPushedValue('test-value-2', true),
     ])
@@ -168,18 +140,50 @@ describe('LoopBack Context', function() {
       var failureCount = getFailureCount(values);
       expect(failureCount).to.equal(0);
     });
-    return successfulRun
-    .then(function() {
-      var maybeFailingRun = Promise.all([
-        runWithPushedValue('test-value-3'),
-        runWithPushedValue('test-value-4'),
-      ])
-      .then(function verify(values) {
-        // Expect one of the two runners to fail, no matter which one
-        var failureCount = getFailureCount(values);
-        expect(failureCount).to.be.at.most(1);
-      });
-      return maybeFailingRun;
-    });
   });
+
+  it('fails at most once without bind option and when v3.7.7 promises',
+  function() {
+    return Promise.all([
+      runWithPushedValue('test-value-3'),
+      runWithPushedValue('test-value-4'),
+    ])
+    .then(function verify(values) {
+      var failureCount = getFailureCount(values);
+      expect(failureCount).to.be.at.most(1);
+    });
+    return maybeFailingRun;
+  });
+
+  var timeout = 25;
+
+  function runWithPushedValue(pushedValue, bind) {
+    return new Promise(function concurrentExecution(outerResolve, reject) {
+      LoopBackContext.runInContext(function pushToContext() {
+        var ctx = LoopBackContext.getCurrentContext({bind: bind});
+        expect(ctx).is.an('object');
+        ctx.set('test-key', pushedValue);
+        var whenPromise = whenV377.promise(function(resolve) {
+          setTimeout(resolve, timeout);
+        });
+        whenPromise.then(function pullFromContextAndReturn() {
+          var pulledValue = ctx && ctx.get('test-key');
+          outerResolve({
+            pulledValue: pulledValue,
+            pushedValue: pushedValue,
+          });
+        }).catch(reject);
+      });
+    });
+  }
+
+  function getFailureCount(values) {
+    var failureCount = 0;
+    values.forEach(function(v) {
+      if (v.pulledValue !== v.pushedValue) {
+        failureCount++;
+      }
+    });
+    return failureCount;
+  }
 });
