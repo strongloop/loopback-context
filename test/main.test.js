@@ -152,7 +152,6 @@ describe('LoopBack Context', function() {
       var failureCount = getFailureCount(values);
       expect(failureCount).to.be.at.most(1);
     });
-    return maybeFailingRun;
   });
 
   var timeout = 25;
