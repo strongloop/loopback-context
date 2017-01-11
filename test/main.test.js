@@ -154,7 +154,7 @@ describe('LoopBack Context', function() {
     });
   });
 
-  var timeout = 25;
+  var timeout = 100;
 
   function runWithPushedValue(pushedValue, bind) {
     return new Promise(function concurrentExecution(outerResolve, reject) {
