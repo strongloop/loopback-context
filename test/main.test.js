@@ -162,9 +162,7 @@ describe('LoopBack Context', function() {
         var ctx = LoopBackContext.getCurrentContext(options);
         expect(ctx).is.an('object');
         ctx.set('test-key', pushedValue);
-        var whenPromise = whenV377.promise(function(resolve) {
-          setTimeout(resolve, timeout);
-        });
+        var whenPromise = whenV377().delay(timeout);
         whenPromise.then(function pullFromContextAndReturn() {
           var pulledValue = ctx && ctx.get('test-key');
           outerResolve({
