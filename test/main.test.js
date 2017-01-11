@@ -142,7 +142,7 @@ describe('LoopBack Context', function() {
     });
   });
 
-  it('fails at most once without bind option and when v3.7.7 promises',
+  it('fails once without bind option and when v3.7.7 promises',
   function() {
     return Promise.all([
       runWithPushedValue('test-value-3'),
@@ -150,7 +150,7 @@ describe('LoopBack Context', function() {
     ])
     .then(function verify(values) {
       var failureCount = getFailureCount(values);
-      expect(failureCount).to.be.at.most(1);
+      expect(failureCount).to.equal(1);
     });
   });
 
