@@ -133,8 +133,8 @@ describe('LoopBack Context', function() {
   it('handles concurrent then() calls with when v3.7.7 promises & bind option',
   function() {
     return Promise.all([
-      runWithPushedValue('test-value-1', true),
-      runWithPushedValue('test-value-2', true),
+      runWithPushedValue('test-value-1', {bind: true}),
+      runWithPushedValue('test-value-2', {bind: true}),
     ])
     .then(function verify(values) {
       var failureCount = getFailureCount(values);
@@ -156,10 +156,10 @@ describe('LoopBack Context', function() {
 
   var timeout = 100;
 
-  function runWithPushedValue(pushedValue, bind) {
+  function runWithPushedValue(pushedValue, options) {
     return new Promise(function concurrentExecution(outerResolve, reject) {
       LoopBackContext.runInContext(function pushToContext() {
-        var ctx = LoopBackContext.getCurrentContext({bind: bind});
+        var ctx = LoopBackContext.getCurrentContext(options);
         expect(ctx).is.an('object');
         ctx.set('test-key', pushedValue);
         var whenPromise = whenV377.promise(function(resolve) {
