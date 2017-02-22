@@ -86,13 +86,15 @@ LoopBackContext.createContext = function(scopeName) {
       }
       /**
        * **NOTE**
-       * This only re-binds get and set methods, the most used.
+       * This only re-binds get, set and bind methods, the most used.
        * If you use other methods of the context, e.g. runInContext(), etc.,
        * you may run into unexpected issues that are fixed only for get & set.
        */
       var boundContext = Object.create(ns);
-      boundContext.get = ns.bind(ns.get);
-      boundContext.set = ns.bind(ns.set);
+      // Call to Function.prototype.bind(), not ns.bind()
+      boundContext.bind = ns.bind.bind(ns);
+      boundContext.get = boundContext.bind(ns.get);
+      boundContext.set = boundContext.bind(ns.set);
       return boundContext;
     };
   }
