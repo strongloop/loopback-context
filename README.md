@@ -8,10 +8,18 @@ Current context for LoopBack applications, based on cls-hooked.
 
 ### Known issues
 
- - [when](https://www.npmjs.com/package/when), a popular Promise
+- [when](https://www.npmjs.com/package/when), a popular Promise
    implementation, breaks context propagation. Please consider using the
    built-in `Promise` implementation provided by Node.js or
    [Bluebird](https://www.npmjs.com/package/bluebird) instead.
+- Express middleware chains which contain a "bad" middleware (i.e. one which
+  breaks context propagation inside its function body, in a way mentioned in
+  this doc) called before other "good" ones, need to be refactored. The
+  following lines need to be present at the beginning of the middleware body. At
+  least the "bad" one; but, as a preventive measure, they can be present in
+  every other middleware of every chain as well:
+      var ctx = LoopBackContext.getCurrentContext({bind: true});
+      next = ctx.bind(next);
 
    Discussion: https://github.com/strongloop/loopback-context/issues/17
 
