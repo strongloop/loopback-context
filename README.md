@@ -14,12 +14,15 @@ Current context for LoopBack applications, based on cls-hooked.
    [Bluebird](https://www.npmjs.com/package/bluebird) instead.
 - Express middleware chains which contain a "bad" middleware (i.e. one which
   breaks context propagation inside its function body, in a way mentioned in
-  this doc) called before other "good" ones, need to be refactored. The
+  this doc) especially if called before other "good" ones needs refactoring. The
   following lines need to be present at the beginning of the middleware body. At
   least the "bad" one; but, as a preventive measure, they can be present in
   every other middleware of every chain as well:
-      var ctx = LoopBackContext.getCurrentContext({bind: true});
-      next = ctx.bind(next);
+      var badMiddleware = function(req, res, next) {
+        // added lines
+        var ctx = LoopBackContext.getCurrentContext({bind: true});
+        next = ctx.bind(next);
+        ...
 
    Discussion: https://github.com/strongloop/loopback-context/issues/17
 
