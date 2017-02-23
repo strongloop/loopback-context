@@ -157,7 +157,7 @@ describe('LoopBack Context', function() {
   var timeout = 100;
 
   function runWithPushedValue(pushedValue, options) {
-    return new Promise(function concurrentExecution(outerResolve, reject) {
+    return new Promise(function concurrentExecutor(outerResolve, reject) {
       LoopBackContext.runInContext(function pushToContext() {
         var ctx = LoopBackContext.getCurrentContext(options);
         expect(ctx).is.an('object');
@@ -182,5 +182,62 @@ describe('LoopBack Context', function() {
       }
     });
     return failureCount;
+  }
+
+  it('doesn\'t mix up req\'s in chains of ' +
+  'Express-middleware-like func\'s if next() cb is bound',
+  function() {
+    return Promise.all([
+      runWithRequestId('test-value-5', true),
+      runWithRequestId('test-value-6', true),
+    ])
+    .then(function verify(values) {
+      var failureCount = getFailureCount(values);
+      expect(failureCount).to.equal(0);
+    });
+  });
+
+  it('fails & mixes up ctx among requests in mw chains if next() cb is unbound',
+  function() {
+    return Promise.all([
+      runWithRequestId('test-value-7'),
+      runWithRequestId('test-value-8'),
+    ])
+    .then(function verify(values) {
+      var failureCount = getFailureCount(values);
+      expect(failureCount).to.equal(1);
+    });
+  });
+
+  function runWithRequestId(pushedValue, bindNextCb) {
+    return new Promise(function chainExecutor(outerResolve, reject) {
+      LoopBackContext.runInContext(function concurrentChain() {
+        var middleware1 = function middleware1(req, res, next) {
+          var ctx = LoopBackContext.getCurrentContext({bind: true});
+          if (bindNextCb) {
+            next = ctx.bind(next);
+          }
+          ctx.set('test-key', req.pushedValue);
+          var whenPromise = whenV377().delay(timeout);
+          whenPromise.then(next).catch(reject);
+        };
+        var middleware2 = function middleware2(req, res, next) {
+          var ctx = LoopBackContext.getCurrentContext({bind: true});
+          var pulledValue = ctx && ctx.get('test-key');
+          next(null, pulledValue);
+        };
+        // Run chain
+        var req = {pushedValue: pushedValue};
+        var res = null;
+        var next2 = function resolveWithResult(error, result) {
+          outerResolve({
+            pulledValue: result,
+            pushedValue: pushedValue,
+          });
+        };
+        var next1 = middleware2.bind(null, req, res, next2);
+        middleware1(req, res, next1);
+      });
+    });
   }
 });
