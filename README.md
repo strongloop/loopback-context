@@ -14,7 +14,8 @@ Current context for LoopBack applications, based on cls-hooked.
    [Bluebird](https://www.npmjs.com/package/bluebird) instead.
 - Express middleware chains which contain a "bad" middleware (i.e. one which
   breaks context propagation inside its function body, in a way mentioned in
-  this doc) especially if called before other "good" ones needs refactoring.
+  this doc) especially if called before other "good" ones needs refactoring,
+  in order to prevent the context from getting mixed up among HTTP requests.
   See usage below for details.
 
    Discussion: https://github.com/strongloop/loopback-context/issues/17
