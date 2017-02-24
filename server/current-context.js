@@ -14,9 +14,13 @@ var LoopBackContext = module.exports;
  * Get the current context object. The context is preserved
  * across async calls, it behaves like a thread-local storage.
  *
+ * @options {Object} [options]
+ * @property {Boolean} bind Bind get/set/bind methods of the context to the
+ * context that's current at the time getCurrentContext() is invoked. This
+ * can be used to work around 3rd party code breaking CLS context propagation.
  * @returns {Namespace} The context object or null.
  */
-LoopBackContext.getCurrentContext = function() {
+LoopBackContext.getCurrentContext = function(options) {
   // A placeholder method, see LoopBackContext.createContext() for the real version
   return null;
 };
@@ -91,10 +95,12 @@ LoopBackContext.createContext = function(scopeName) {
        * you may run into unexpected issues that are fixed only for get & set.
        */
       var boundContext = Object.create(ns);
-      // Call to Function.prototype.bind(), not ns.bind()
-      boundContext.bind = ns.bind.bind(ns);
       boundContext.get = boundContext.bind(ns.get);
       boundContext.set = boundContext.bind(ns.set);
+
+      // Call to Function.prototype.bind(), not ns.bind()
+      boundContext.bind = ns.bind.bind(ns);
+
       return boundContext;
     };
   }

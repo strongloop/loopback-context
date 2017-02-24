@@ -212,31 +212,37 @@ describe('LoopBack Context', function() {
   function runWithRequestId(pushedValue, bindNextCb) {
     return new Promise(function chainExecutor(outerResolve, reject) {
       LoopBackContext.runInContext(function concurrentChain() {
-        var middleware1 = function middleware1(req, res, next) {
+        function middlewareBreakingCls(req, res, next) {
           var ctx = LoopBackContext.getCurrentContext({bind: true});
           if (bindNextCb) {
             next = ctx.bind(next);
           }
-          ctx.set('test-key', req.pushedValue);
+          ctx.set('test-key', pushedValue);
           var whenPromise = whenV377().delay(timeout);
           whenPromise.then(next).catch(reject);
         };
-        var middleware2 = function middleware2(req, res, next) {
+
+        function middlewareReadingContext(req, res, next) {
           var ctx = LoopBackContext.getCurrentContext({bind: true});
           var pulledValue = ctx && ctx.get('test-key');
           next(null, pulledValue);
         };
-        // Run chain
-        var req = {pushedValue: pushedValue};
+
+        // Run the chain
+        var req = null;
         var res = null;
-        var next2 = function resolveWithResult(error, result) {
-          outerResolve({
-            pulledValue: result,
-            pushedValue: pushedValue,
+        middlewareBreakingCls(req, res, function(err) {
+          if (err) return reject(err);
+
+          middlewareReadingContext(req, res, function(err, result) {
+            if (err) return reject(err);
+
+            outerResolve({
+              pulledValue: result,
+              pushedValue: pushedValue,
+            });
           });
-        };
-        var next1 = middleware2.bind(null, req, res, next2);
-        middleware1(req, res, next1);
+        });
       });
     });
   }
