@@ -8,10 +8,15 @@ Current context for LoopBack applications, based on cls-hooked.
 
 ### Known issues
 
- - [when](https://www.npmjs.com/package/when), a popular Promise
+- [when](https://www.npmjs.com/package/when), a popular Promise
    implementation, breaks context propagation. Please consider using the
    built-in `Promise` implementation provided by Node.js or
    [Bluebird](https://www.npmjs.com/package/bluebird) instead.
+- Express middleware chains which contain a "bad" middleware (i.e. one which
+  breaks context propagation inside its function body, in a way mentioned in
+  this doc) especially if called before other "good" ones needs refactoring,
+  in order to prevent the context from getting mixed up among HTTP requests.
+  See usage below for details.
 
    Discussion: https://github.com/strongloop/loopback-context/issues/17
 
@@ -61,7 +66,6 @@ require('cls-hooked');
 This approach should be compatible with all process managers, including
 `strong-pm`. However, we feel that relying on the order of `require` statements
 is error-prone.
-
 
 ### Configure context propagation
 
@@ -113,6 +117,48 @@ MyModel.myMethod = function(cb) {
   ctx.set('key', { foo: 'bar' });
 });
 ```
+
+### Bind for concurrency
+
+In order to workaround the aforementioned concurrency issue with `when` (and
+similar `Promise`-like and other libraries implementing custom queues and/or
+connection pools), it's recommended to activate context binding inside each
+HTTP request or concurrent `runInContext()` call, by using the `bind` option, as
+in this example:
+
+    var ctx = LoopBackContext.getCurrentContext({ bind: true });
+
+With the option enabled, this both creates the context, and binds the access
+methods of the context (i.e. `get` and `set`), at once.
+
+**Warning**: this only works if it's **the first expression evaluated** in every
+middleware/operation hook/`runInContext()` call etc. that uses
+`getCurrentContext`. (It must be the first expression; it may not be enough if
+it's at the first line). Explanation: you must bind the context while it's still
+correct, i.e. before it gets mixed up between concurrent operations affected by
+bugs. Therefore, to be sure, you must bind it before *any* operation.
+
+Also, with respect to the "bad", context-breaking middleware use case mentioned in "Known issues"
+before, the following 2 lines need to be present at the beginning of the middleware
+body. At least the "bad" one; but, as a preventive measure, they can be present
+in every other middleware of every chain as well, being backward-compatible:
+
+     var badMiddleware = function(req, res, next) {
+       // these 2 lines below are needed
+       var ctx = LoopBackContext.getCurrentContext({bind: true});
+       next = ctx.bind(next);
+       ...
+
+The `bind` option defaults to `false`. This is only in order to prevent breaking
+legacy apps; but if your app doesn't have such issue, then you can safely use
+`bind: true` everywhere in your app (e.g. with a
+[codemod](https://github.com/facebook/jscodeshift), or by monkey-patching
+`getCurrentContext()` globally, if you prefer an automated fashion).
+
+**Warning**: this only applies to application modules. In fact, if the module
+affected by the concurrency issue is of this kind, you can easily refactor/write
+your own code so to enable `bind`. Not if it's a 3rd-party module, nor a
+Loopback non-core module, unless you fork and fix it.
 
 ### Use current authenticated user in remote methods
 

@@ -5,7 +5,8 @@
 
 'use strict';
 
-var async = require('async');
+var asyncV152 = require('async-1.5.2');
+var whenV377 = require('when-3.7.7');
 var LoopBackContext = require('..');
 var Domain = require('domain');
 var EventEmitter = require('events').EventEmitter;
@@ -106,10 +107,9 @@ describe('LoopBack Context', function() {
   // Heavily edited by others
   it('keeps context when using waterfall() from async 1.5.2',
   function(done) {
-    expect(require('async/package.json').version).to.equal('1.5.2');
     LoopBackContext.runInContext(function() {
       // Trigger async waterfall callbacks
-      async.waterfall([
+      asyncV152.waterfall([
         function pushToContext(next) {
           var ctx = LoopBackContext.getCurrentContext();
           expect(ctx).is.an('object');
@@ -129,4 +129,121 @@ describe('LoopBack Context', function() {
       ], done);
     });
   });
+
+  it('handles concurrent then() calls with when v3.7.7 promises & bind option',
+  function() {
+    return Promise.all([
+      runWithPushedValue('test-value-1', {bind: true}),
+      runWithPushedValue('test-value-2', {bind: true}),
+    ])
+    .then(function verify(values) {
+      var failureCount = getFailureCount(values);
+      expect(failureCount).to.equal(0);
+    });
+  });
+
+  it('fails once without bind option and when v3.7.7 promises',
+  function() {
+    return Promise.all([
+      runWithPushedValue('test-value-3'),
+      runWithPushedValue('test-value-4'),
+    ])
+    .then(function verify(values) {
+      var failureCount = getFailureCount(values);
+      expect(failureCount).to.equal(1);
+    });
+  });
+
+  var timeout = 100;
+
+  function runWithPushedValue(pushedValue, options) {
+    return new Promise(function concurrentExecutor(outerResolve, reject) {
+      LoopBackContext.runInContext(function pushToContext() {
+        var ctx = LoopBackContext.getCurrentContext(options);
+        expect(ctx).is.an('object');
+        ctx.set('test-key', pushedValue);
+        var whenPromise = whenV377().delay(timeout);
+        whenPromise.then(function pullFromContextAndReturn() {
+          var pulledValue = ctx && ctx.get('test-key');
+          outerResolve({
+            pulledValue: pulledValue,
+            pushedValue: pushedValue,
+          });
+        }).catch(reject);
+      });
+    });
+  }
+
+  function getFailureCount(values) {
+    var failureCount = 0;
+    values.forEach(function(v) {
+      if (v.pulledValue !== v.pushedValue) {
+        failureCount++;
+      }
+    });
+    return failureCount;
+  }
+
+  it('doesn\'t mix up req\'s in chains of ' +
+  'Express-middleware-like func\'s if next() cb is bound',
+  function() {
+    return Promise.all([
+      runWithRequestId('test-value-5', true),
+      runWithRequestId('test-value-6', true),
+    ])
+    .then(function verify(values) {
+      var failureCount = getFailureCount(values);
+      expect(failureCount).to.equal(0);
+    });
+  });
+
+  it('fails & mixes up ctx among requests in mw chains if next() cb is unbound',
+  function() {
+    return Promise.all([
+      runWithRequestId('test-value-7'),
+      runWithRequestId('test-value-8'),
+    ])
+    .then(function verify(values) {
+      var failureCount = getFailureCount(values);
+      expect(failureCount).to.equal(1);
+    });
+  });
+
+  function runWithRequestId(pushedValue, bindNextCb) {
+    return new Promise(function chainExecutor(outerResolve, reject) {
+      LoopBackContext.runInContext(function concurrentChain() {
+        function middlewareBreakingCls(req, res, next) {
+          var ctx = LoopBackContext.getCurrentContext({bind: true});
+          if (bindNextCb) {
+            next = ctx.bind(next);
+          }
+          ctx.set('test-key', pushedValue);
+          var whenPromise = whenV377().delay(timeout);
+          whenPromise.then(next).catch(reject);
+        };
+
+        function middlewareReadingContext(req, res, next) {
+          var ctx = LoopBackContext.getCurrentContext({bind: true});
+          var pulledValue = ctx && ctx.get('test-key');
+          next(null, pulledValue);
+        };
+
+        // Run the chain
+        var req = null;
+        var res = null;
+        middlewareBreakingCls(req, res, function(err) {
+          if (err) return reject(err);
+
+          middlewareReadingContext(req, res, function(err, result) {
+            if (err) return reject(err);
+
+            outerResolve({
+              pulledValue: result,
+              pushedValue: pushedValue,
+            });
+          });
+        });
+      });
+    });
+  }
 });
