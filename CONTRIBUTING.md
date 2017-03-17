@@ -1,9 +1,9 @@
 ### Contributing ###
 
-Thank you for your interest in `loopback-context-cls`, an open source project
+Thank you for your interest in `loopback-context`, an open source project
 administered by StrongLoop.
 
-Contributing to `loopback-context-cls` is easy. In a few simple steps:
+Contributing to `loopback-context` is easy. In a few simple steps:
 
   * Ensure that your effort is aligned with the project's roadmap by
     talking to the maintainers, especially if you are going to spend a
