@@ -1,3 +1,13 @@
+2017-03-17, Version 3.1.0
+=========================
+
+ * fix typo in readme (biniam)
+
+ * Add bind option to getCurrentContext() (Emiliano Daddario)
+
+ * Upgrade eslint & config to latest (Miroslav Bajtoš)
+
+
 2017-01-06, Version 3.0.0
 =========================
 
