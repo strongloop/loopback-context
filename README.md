@@ -209,7 +209,7 @@ module.exports = function(options) {
     "loopback#token": {}
   },
   "auth:after": {
-    "./middleware/set-current-user": {}
+    "./middleware/store-current-user": {}
   }
 }
 ```
