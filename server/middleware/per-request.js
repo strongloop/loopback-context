@@ -55,6 +55,6 @@ function perRequestContextFactory(options) {
         ns.set('http', {req: req, res: res});
       }
       next();
-    });
+    }, ns);
   };
 }
