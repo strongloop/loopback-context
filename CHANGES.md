@@ -1,3 +1,9 @@
+2017-07-10, Version 3.2.0
+=========================
+
+ * Add Node.js 7 to package.json and .travis.yml (Edgars Zagorskis)
+
+
 2017-03-17, Version 3.1.0
 =========================
 
