@@ -1,9 +1,9 @@
 {
   "name": "loopback-context",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Current context for LoopBack applications, based on cls-hooked",
   "engines": {
-    "node": "^4.5 || ^5.10 || ^6.0 || ^7.0"
+    "node": "^4.5 || ^5.10 || ^6.0 || ^7.0 || ^8.2.1"
   },
   "keywords": [
     "StrongLoop",
@@ -23,7 +23,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "cls-hooked": "^4.0.1"
+    "cls-hooked": "^4.2.0"
   },
   "devDependencies": {
     "async-1.5.2": "file:./test/stub-modules/async-1.5.2",
