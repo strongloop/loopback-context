@@ -32,7 +32,7 @@ $ npm install --save loopback-context cls-hooked
 ```
 
 Make sure you are running on a Node.js version supported by this module
-(`^4.5`, `^5.10` or `^6.0`). When installing, check the output of `npm install`
+(`^4.5`, `^5.10`, `^6.0` or `^7.0`). When installing, check the output of `npm install`
 and make sure there are no `engine` related warnings.
 
 ## Usage
