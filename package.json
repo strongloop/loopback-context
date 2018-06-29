@@ -3,7 +3,7 @@
   "version": "3.3.0",
   "description": "Current context for LoopBack applications, based on cls-hooked",
   "engines": {
-    "node": "^4.5 || ^5.10 || ^6.0 || ^7.0 || ^8.2.1"
+    "node": "^6.0 || ^8.2.1"
   },
   "keywords": [
     "StrongLoop",
