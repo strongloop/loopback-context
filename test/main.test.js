@@ -52,7 +52,7 @@ describe('LoopBack Context', function() {
     TestModel.test = function(inst, cb) {
       var tmpCtx = LoopBackContext.getCurrentContext();
       if (tmpCtx) tmpCtx.set('data', 'a value stored in context');
-      if (process.domain) cb = process.domain.bind(cb);  // IMPORTANT
+      if (process.domain) cb = process.domain.bind(cb); // IMPORTANT
       runInOtherDomain(cb);
     };
 
@@ -106,53 +106,53 @@ describe('LoopBack Context', function() {
   // https://gist.github.com/marlonkjoseph/f42f3c71f746896a0d4b7279a34ea753
   // Heavily edited by others
   it('keeps context when using waterfall() from async 1.5.2',
-  function(done) {
-    LoopBackContext.runInContext(function() {
+    function(done) {
+      LoopBackContext.runInContext(function() {
       // Trigger async waterfall callbacks
-      asyncV152.waterfall([
-        function pushToContext(next) {
-          var ctx = LoopBackContext.getCurrentContext();
-          expect(ctx).is.an('object');
-          ctx.set('test-key', 'test-value');
-          next();
-        },
-        function pullFromContext(next) {
-          var ctx = LoopBackContext.getCurrentContext();
-          expect(ctx).is.an('object');
-          var testValue = ctx && ctx.get('test-key', 'test-value');
-          next(null, testValue);
-        },
-        function verify(testValue, next) {
-          expect(testValue).to.equal('test-value');
-          next();
-        },
-      ], done);
+        asyncV152.waterfall([
+          function pushToContext(next) {
+            var ctx = LoopBackContext.getCurrentContext();
+            expect(ctx).is.an('object');
+            ctx.set('test-key', 'test-value');
+            next();
+          },
+          function pullFromContext(next) {
+            var ctx = LoopBackContext.getCurrentContext();
+            expect(ctx).is.an('object');
+            var testValue = ctx && ctx.get('test-key', 'test-value');
+            next(null, testValue);
+          },
+          function verify(testValue, next) {
+            expect(testValue).to.equal('test-value');
+            next();
+          },
+        ], done);
+      });
     });
-  });
 
   it('handles concurrent then() calls with when v3.7.7 promises & bind option',
-  function() {
-    return Promise.all([
-      runWithPushedValue('test-value-1', {bind: true}),
-      runWithPushedValue('test-value-2', {bind: true}),
-    ])
-    .then(function verify(values) {
-      var failureCount = getFailureCount(values);
-      expect(failureCount).to.equal(0);
+    function() {
+      return Promise.all([
+        runWithPushedValue('test-value-1', {bind: true}),
+        runWithPushedValue('test-value-2', {bind: true}),
+      ])
+        .then(function verify(values) {
+          var failureCount = getFailureCount(values);
+          expect(failureCount).to.equal(0);
+        });
     });
-  });
 
   it('fails once without bind option and when v3.7.7 promises',
-  function() {
-    return Promise.all([
-      runWithPushedValue('test-value-3'),
-      runWithPushedValue('test-value-4'),
-    ])
-    .then(function verify(values) {
-      var failureCount = getFailureCount(values);
-      expect(failureCount).to.equal(1);
+    function() {
+      return Promise.all([
+        runWithPushedValue('test-value-3'),
+        runWithPushedValue('test-value-4'),
+      ])
+        .then(function verify(values) {
+          var failureCount = getFailureCount(values);
+          expect(failureCount).to.equal(1);
+        });
     });
-  });
 
   var timeout = 100;
 
@@ -191,23 +191,23 @@ describe('LoopBack Context', function() {
       runWithRequestId('test-value-5', true),
       runWithRequestId('test-value-6', true),
     ])
-    .then(function verify(values) {
-      var failureCount = getFailureCount(values);
-      expect(failureCount).to.equal(0);
-    });
+      .then(function verify(values) {
+        var failureCount = getFailureCount(values);
+        expect(failureCount).to.equal(0);
+      });
   });
 
   it('fails & mixes up ctx among requests in mw chains if next() cb is unbound',
-  function() {
-    return Promise.all([
-      runWithRequestId('test-value-7'),
-      runWithRequestId('test-value-8'),
-    ])
-    .then(function verify(values) {
-      var failureCount = getFailureCount(values);
-      expect(failureCount).to.equal(1);
+    function() {
+      return Promise.all([
+        runWithRequestId('test-value-7'),
+        runWithRequestId('test-value-8'),
+      ])
+        .then(function verify(values) {
+          var failureCount = getFailureCount(values);
+          expect(failureCount).to.equal(1);
+        });
     });
-  });
 
   function runWithRequestId(pushedValue, bindNextCb) {
     return new Promise(function chainExecutor(outerResolve, reject) {

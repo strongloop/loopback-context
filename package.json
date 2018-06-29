@@ -27,13 +27,13 @@
   },
   "devDependencies": {
     "async-1.5.2": "file:./test/stub-modules/async-1.5.2",
-    "chai": "^3.5.0",
-    "dirty-chai": "^1.2.2",
-    "eslint": "^3.14.1",
-    "eslint-config-loopback": "^8.0.0",
+    "chai": "^4.1.2",
+    "dirty-chai": "^2.0.1",
+    "eslint": "^5.0.1",
+    "eslint-config-loopback": "^10.0.0",
     "loopback": "^3.0.0",
-    "mocha": "^2.5.3",
-    "supertest": "^1.2.0",
+    "mocha": "^5.2.0",
+    "supertest": "^3.1.0",
     "when-3.7.7": "file:./test/stub-modules/when-3.7.7"
   }
 }
