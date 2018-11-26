@@ -2,6 +2,10 @@
 
 Current context for LoopBack applications, based on cls-hooked.
 
+This module is in Active LTS mode, new features are no longer accepted.
+(See [Module Long Term Support Policy](#module-long-term-support-policy) below.)
+LoopBack 3 users looking for new features are encouraged to upgrade to LoopBack 4. Refer to [loopback-next#1849](https://github.com/strongloop/loopback-next/issues/1849) for more information on how to upgrade.
+
 ## WARNING
 
 **`cls-hooked` module uses undocumented `AsyncWrap` API that was introduced to Node.js relatively recently. While this new API seems to be more reliable than the old `async-listener` used by `continuation-local-storage`, there are still cases where the context (local storage) is not preserved correctly. Please consider this risk before using loopback-context.**
@@ -230,3 +234,14 @@ module.exports = function(YourModel) {
   ...
 };
 ```
+
+## Module Long Term Support Policy
+
+This module adopts the [Module Long Term Support (LTS)](http://github.com/CloudNativeJS/ModuleLTS) policy, with the following End Of Life (EOL) dates:
+
+| Version | Status          | Published | EOL      |
+| ------- | --------------- | --------- | -------- |
+| 3.x     | Active LTS      | Jan 2017  | Dec 2019 |
+| 1.x     | Maintenance LTS | Aug 2016  | Apr 2019 |
+
+Learn more about our LTS plan in the [docs](https://loopback.io/doc/en/contrib/Long-term-support.html).
