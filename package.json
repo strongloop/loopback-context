@@ -1,6 +1,6 @@
 {
   "name": "loopback-context",
-  "version": "3.4.0",
+  "version": "3.3.0",
   "description": "Current context for LoopBack applications, based on cls-hooked",
   "engines": {
     "node": "^6.0 || ^8.2.1 || ^10.14"
