@@ -1,3 +1,21 @@
+2019-01-02, Version 3.4.0
+=========================
+
+ * Travis: enable Node.js 10.x (Miroslav Bajtoš)
+
+ * Node version ^10.14 added to engines list (Ahmet Cetin)
+
+ * add lts annoucement (jannyHou)
+
+ * Upgrade dependecies, fix new linter errors (Miroslav Bajtoš)
+
+ * Drop support for Node.js 4.x, 5.x and 7.x (Miroslav Bajtoš)
+
+ * Create Issue and PR Templates (#36) (Sakib Hasan)
+
+ * Add CODEOWNERS file (Diana Lau)
+
+
 2017-07-21, Version 3.3.0
 =========================
 
