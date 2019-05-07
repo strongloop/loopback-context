@@ -35,5 +35,6 @@
     "mocha": "^5.2.0",
     "supertest": "^3.1.0",
     "when-3.7.7": "file:./test/stub-modules/when-3.7.7"
-  }
+  },
+  "author": "IBM Corp."
 }
