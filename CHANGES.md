@@ -1,3 +1,17 @@
+2020-02-17, Version 3.5.0
+=========================
+
+ * Add support for Node.js 12 (Ahmet Cetin)
+
+ * chore: enable stalebot (Diana Lau)
+
+ * chore: improve issue and PR templates (Nora)
+
+ * Drop support for Node.js 6.x (Miroslav Bajtoš)
+
+ * chore: update copyrights years (Agnes Lin)
+
+
 2019-01-02, Version 3.4.0
 =========================
 
