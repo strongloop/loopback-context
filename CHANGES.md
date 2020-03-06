@@ -1,3 +1,9 @@
+2020-03-06, Version 3.5.1
+=========================
+
+ * Update LTS status in README (Miroslav Bajtoš)
+
+
 2020-02-17, Version 3.5.0
 =========================
 
