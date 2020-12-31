@@ -1,7 +1,8 @@
 # loopback-context
 
-**⚠️ LoopBack 3 is in Maintenance LTS mode, only critical bugs and critical
-security fixes will be provided. (See
+**⚠️ LoopBack 3 has reached end of life. We are no longer accepting pull requests or providing 
+support for community users. The only exception is fixes for critical bugs and security 
+vulnerabilities provided as part of support for IBM API Connect customers. (See
 [Module Long Term Support Policy](#module-long-term-support-policy) below.)**
 
 We urge all LoopBack 3 users to migrate their applications to LoopBack 4 as
@@ -12,10 +13,6 @@ for more information on how to upgrade.
 ## Overview
 
 Current context for LoopBack applications, based on cls-hooked.
-
-This module is in Active LTS mode, new features are no longer accepted.
-(See [Module Long Term Support Policy](#module-long-term-support-policy) below.)
-LoopBack 3 users looking for new features are encouraged to upgrade to LoopBack 4. Refer to [loopback-next#1849](https://github.com/strongloop/loopback-next/issues/1849) for more information on how to upgrade.
 
 ## WARNING
 
@@ -252,7 +249,7 @@ This module adopts the [Module Long Term Support (LTS)](http://github.com/CloudN
 
 | Version | Status          | Published | EOL      |
 | ------- | --------------- | --------- | -------- |
-| 3.x     | Maintenance LTS | Jan 2017  | Dec 2020 |
+| 3.x     | End-of-Life     | Jan 2017  | Dec 2020 |
 | 1.x     | End-of-Life     | Aug 2016  | Apr 2019 |
 
 Learn more about our LTS plan in the [docs](https://loopback.io/doc/en/contrib/Long-term-support.html).
