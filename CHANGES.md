@@ -1,3 +1,9 @@
+2021-01-19, Version 3.5.2
+=========================
+
+ * chore: update LTS status to End-of-Life (Rifa Achrinza)
+
+
 2020-03-06, Version 3.5.1
 =========================
 
